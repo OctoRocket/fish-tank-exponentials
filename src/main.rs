@@ -1,28 +1,27 @@
-use std::num::ParseIntError;
 use iced::{
     Element,
     Sandbox,
     Settings,
     Alignment,
-    widget::{row, slider, TextInput},
+    Theme,
+    widget::{row, slider, text_input},
 };
 
 pub fn main() -> iced::Result {
     Aquarium::run(Settings::default())
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 enum Message {
-    BaseChanged(Result<u32, ParseIntError>),
-    PowerChanged(Result<u32, ParseIntError>),
+    BaseChanged(String),
+    PowerChanged(String),
     TickSliderChanged(u32),
 }
 
-#[derive(Debug, Clone, Copy)]
 
 struct Aquarium {
-    base: u32,
-    power: u32,
+    base: String,
+    power: String,
     tick_rate: u32,
 }
 
@@ -31,8 +30,8 @@ impl Sandbox for Aquarium {
 
     fn new() -> Self {
         Self {
-            base: 2,
-            power: 1,
+            base: String::from("2"),
+            power: String::from("1"),
             tick_rate: 1,
         }
     }
@@ -44,24 +43,10 @@ impl Sandbox for Aquarium {
     fn update(&mut self, message: Self::Message) {
         match message {
             Message::BaseChanged(base) => {
-                match base {
-                    Ok(val) => {
-                        self.base = val;
-                    },
-                    Err(e) => {
-                        self.base = 2;
-                    }
-                }
+                self.base = base;
             } 
             Message::PowerChanged(power) => {
-                match power {
-                    Ok(val) => {
-                        self.base = val;
-                    },
-                    Err(e) => {
-                        self.base = 2;
-                    }
-                }
+                self.power = power
             }
             Message::TickSliderChanged(tick_rate) => {
                 self.tick_rate = tick_rate;
@@ -70,18 +55,32 @@ impl Sandbox for Aquarium {
     }
 
     fn view(&self) -> Element<Message> {
-        let base_str = self.base.to_string().as_str();
-        let base_input = TextInput::new(
+        let base_input = text_input(
             "Default base: 2",
-            base_str,
-            Message::BaseChanged(base_str.parse())
-        );
+            &self.base,
+            Message::BaseChanged,
+        )
+        .padding(10)
+        .size(20);
+        let power_input = text_input(
+            "Default power: 1",
+            &self.power,
+            Message::PowerChanged
+        )
+        .padding(10)
+        .size(20);
         row![
+            base_input,
+            power_input,
             slider(1..=16, self.tick_rate as u32, Message::TickSliderChanged)
         ]
         .padding(10)
         .spacing(20)
         .align_items(Alignment::Center)
         .into()
+    }
+
+    fn theme(&self) -> Theme {
+        Theme::Dark
     }
 }
